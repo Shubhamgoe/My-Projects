@@ -6,12 +6,13 @@
 #include <sys/socket.h>
 #include <netinet/tcp.h>
 #include <netinet/ip.h>
+// using namespace std;
 
 #define DEST_IP "127.0.0.1"
 #define DEST_PORT 8080
-#define SYN_FLAG 0x02  // Macro for SYN flag
-#define ACK_FLAG 0x10  // ACK flag
-#define FIN_FLAG 0x01  // Macro for FIN flag
+#define SYN_FLAG 0x02
+#define ACK_FLAG 0x10
+#define FIN_FLAG 0x01
 
 enum TCPState {
     CLOSED,
@@ -20,24 +21,23 @@ enum TCPState {
     FIN_WAIT
 };
 
-
 struct TCPHeader {
     uint16_t sourcePort;
     uint16_t destPort;
     uint32_t seqNum;
     uint32_t ackNum;
-    uint8_t dataOffset;  // Header length (5 << 4 for 20 bytes)
-    uint8_t flags;       // Flags (SYN, ACK, etc.)
+    uint8_t dataOffset;
+    uint8_t flags;
     uint16_t windowSize;
     uint16_t checksum;
     uint16_t urgentPointer;
 
     TCPHeader() {
-        sourcePort = htons(12345);  // Arbitrary source port
-        destPort = htons(8080);     // Arbitrary destination port
-        seqNum = htonl(1000);       // Arbitrary sequence number
+        sourcePort = htons(12345);
+        destPort = htons(8080);
+        seqNum = htonl(1000);
         ackNum = 0;
-        dataOffset = 5 << 4;        // 5 words (20 bytes) << 4
+        dataOffset = 5 << 4;
         flags = 0;
         windowSize = htons(1024);
         checksum = 0;
@@ -57,18 +57,14 @@ uint16_t calculateChecksum(uint16_t *buffer, int size) {
 }
 
 int main() {
-    
     TCPState state = CLOSED;
-    
     std::string message;
-
     int sock = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
     if (sock < 0) {
         perror("Socket creation failed");
         return -1;
     }
 
-    // Enable IP_HDRINCL to let the kernel know that headers are included in the packet
     int one = 1;
     if (setsockopt(sock, IPPROTO_IP, IP_HDRINCL, &one, sizeof(one)) < 0) {
         perror("Error setting socket options");
@@ -85,49 +81,51 @@ int main() {
     ipHeader->ihl = 5;
     ipHeader->version = 4;
     ipHeader->tos = 0;
-    ipHeader->tot_len = sizeof(struct iphdr) + sizeof(TCPHeader) + message.size();
+    ipHeader->tot_len = sizeof(struct iphdr) + sizeof(TCPHeader);
     ipHeader->id = htons(54321);
     ipHeader->frag_off = 0;
     ipHeader->ttl = 255;
     ipHeader->protocol = IPPROTO_TCP;
-    ipHeader->saddr = inet_addr("127.0.0.1");  // Replace with client's IP
+    ipHeader->saddr = inet_addr("127.0.0.1");
     ipHeader->daddr = inet_addr(DEST_IP);
 
     // Fill in the TCP Header
-    tcpHeader->sourcePort = htons(12345);  // Arbitrary source port
+    tcpHeader->sourcePort = htons(12345);
     tcpHeader->destPort = htons(DEST_PORT);
     tcpHeader->seqNum = htonl(0);
     tcpHeader->ackNum = 0;
     tcpHeader->dataOffset = 5 << 4;
-    tcpHeader->flags = SYN_FLAG;  // SYN flag set
+    tcpHeader->flags = SYN_FLAG;
     tcpHeader->windowSize = htons(1024);
-
-    // Calculate the checksum
     tcpHeader->checksum = calculateChecksum((uint16_t *)tcpHeader, sizeof(TCPHeader) / 2);
 
-    // Destination address
     struct sockaddr_in destAddr;
     destAddr.sin_family = AF_INET;
     destAddr.sin_port = htons(DEST_PORT);
     destAddr.sin_addr.s_addr = inet_addr(DEST_IP);
 
-    // Send the SYN packet
     if (sendto(sock, packet, ipHeader->tot_len, 0, (struct sockaddr *)&destAddr, sizeof(destAddr)) < 0) {
         perror("Packet sending failed");
         close(sock);
         return -1;
     }
 
-    std::cout << "SYN packet sent. Waiting for response...\n";
-    state = SYN_SENT;
+    std::cout << "SYN packet sent. Waiting for response...\n" << std::flush;
+    
 
-    // Now, let's wait for the incoming SYN-ACK packet
+    state = SYN_SENT;
+    // cout<<"ready";
+    
     struct sockaddr_in sourceAddr;
     socklen_t sourceAddrLen = sizeof(sourceAddr);
     char recvPacket[4096];
-
+    
     while (true) {
+        // cout<<"ready";
+        // std::cout << "before" << std::endl;
         int recvLen = recvfrom(sock, recvPacket, sizeof(recvPacket), 0, (struct sockaddr *)&sourceAddr, &sourceAddrLen);
+        // std::cout << recven << std::endl;
+        // cout<<"got it";
         if (recvLen < 0) {
             perror("Error receiving packet");
             close(sock);
@@ -137,29 +135,34 @@ int main() {
         struct iphdr *recvIpHeader = (struct iphdr *)recvPacket;
         struct TCPHeader *recvTcpHeader = (struct TCPHeader *)(recvPacket + sizeof(struct iphdr));
 
-        // Check if the received packet is a TCP packet and has both SYN and ACK flags set
-        if (recvIpHeader->protocol == IPPROTO_TCP) {
-            if ((recvTcpHeader->flags & (SYN_FLAG | ACK_FLAG)) == (SYN_FLAG | ACK_FLAG)) {
-                std::cout << "Received SYN-ACK packet from server!\n";
-                state = ESTABLISHED;
-                break;
-            }
-        }
+        // Assuming you have already set up recvPacket and parsed the IP and TCP headers
+        // Check the first 20 bytes of the packet to ensure it's an IP packet
+        std::cout << "Received packet length: " << recvLen << std::endl;
+        std::cout << "First byte: " << (int)recvPacket[0] << std::endl;
+        std::cout << "Protocol field in IP header: " << (int)recvIpHeader->protocol << std::endl;
+        std::cout << "TCP flags: " << (int)recvTcpHeader->flags << std::endl;
+        state = ESTABLISHED;
+        break;
+
+
+
+        // if (recvIpHeader->protocol == IPPROTO_TCP && (recvTcpHeader->flags & (SYN_FLAG | ACK_FLAG)) == (SYN_FLAG | ACK_FLAG)) {
+        //     std::cout << "Received SYN-ACK packet from server!\n";
+        //     state = ESTABLISHED;
+        //     break;
+        // }
     }
-    while(true){
 
+    while (state == ESTABLISHED) {
         std::cout << "Enter some input: ";
-        std::getline(std::cin, message);  // Reads a full line of input from the user
-        
+        std::getline(std::cin, message);
 
-        // Send the message to the server
         char messagePacket[4096];
         memset(messagePacket, 0, sizeof(messagePacket));
 
         struct iphdr *messageIpHeader = (struct iphdr *)messagePacket;
         struct TCPHeader *messageTcpHeader = (struct TCPHeader *)(messagePacket + sizeof(struct iphdr));
 
-        // Fill in the IP Header
         messageIpHeader->ihl = 5;
         messageIpHeader->version = 4;
         messageIpHeader->tos = 0;
@@ -168,25 +171,18 @@ int main() {
         messageIpHeader->frag_off = 0;
         messageIpHeader->ttl = 255;
         messageIpHeader->protocol = IPPROTO_TCP;
-        messageIpHeader->saddr = inet_addr("127.0.0.1");  // Replace with client's IP
+        messageIpHeader->saddr = inet_addr("127.0.0.1");
         messageIpHeader->daddr = inet_addr(DEST_IP);
 
-        // Fill in the TCP Header
-        messageTcpHeader->sourcePort = htons(12345);  // Arbitrary source port
+        messageTcpHeader->sourcePort = htons(12345);
         messageTcpHeader->destPort = htons(DEST_PORT);
         messageTcpHeader->seqNum = htonl(0);
         messageTcpHeader->ackNum = 0;
         messageTcpHeader->dataOffset = 5 << 4;
-        messageTcpHeader->flags = ACK_FLAG;  // ACK flag set
+        messageTcpHeader->flags = ACK_FLAG;
         messageTcpHeader->windowSize = htons(1024);
-
-        // Calculate the checksum
         messageTcpHeader->checksum = calculateChecksum((uint16_t *)messageTcpHeader, sizeof(TCPHeader) / 2);
 
-        // Append the message to the packet
-        
-
-        // Send the message to the server
         if (message == "exit") {
             messageTcpHeader->flags = FIN_FLAG;
             memcpy(messagePacket + sizeof(struct iphdr) + sizeof(TCPHeader), message.c_str(), message.size());
@@ -195,8 +191,42 @@ int main() {
                 close(sock);
                 return -1;
             }
-            break;  // Exit the loop if 'exit' is entered
+            state = FIN_WAIT;
+            std::cout << "Connection is terminating.\n";
+            
+            int recvLen = recvfrom(sock, recvPacket, sizeof(recvPacket), 0, (struct sockaddr *)&sourceAddr, &sourceAddrLen);
+            if (recvLen < 0) {
+                perror("Error receiving packet");
+                close(sock);
+                return -1;
+            }
+            struct iphdr *recvIpHeader = (struct iphdr *)recvPacket;
+            struct TCPHeader *recvTcpHeader = (struct TCPHeader *)(recvPacket + sizeof(struct iphdr));
+            if(recvIpHeader->protocol == IPPROTO_TCP && ((recvTcpHeader->flags&ACK_FLAG)==ACK_FLAG)){
+                std::cout << "Fin-ack recieved\n";
+            }
+
+            recvLen = recvfrom(sock, recvPacket, sizeof(recvPacket), 0, (struct sockaddr *)&sourceAddr, &sourceAddrLen);
+            if (recvLen < 0) {
+                perror("Error receiving packet");
+                close(sock);
+                return -1;
+            }
+            
+            if(recvIpHeader->protocol == IPPROTO_TCP && ((recvTcpHeader->flags&FIN_FLAG)==FIN_FLAG)){
+                std::cout << "Fin recieved from server\n";
+            }
+
+            memcpy(messagePacket + sizeof(struct iphdr) + sizeof(TCPHeader), message.c_str(), message.size());
+            if (sendto(sock, messagePacket, messageIpHeader->tot_len, 0, (struct sockaddr *)&destAddr, sizeof(destAddr)) < 0) {
+                perror("Message sending failed");
+                close(sock);
+                return -1;
+            }
+            std::cout << "Final ack sent and connection terminated\n";
+            break;
         }
+
         memcpy(messagePacket + sizeof(struct iphdr) + sizeof(TCPHeader), message.c_str(), message.size());
         if (sendto(sock, messagePacket, messageIpHeader->tot_len, 0, (struct sockaddr *)&destAddr, sizeof(destAddr)) < 0) {
             perror("Message sending failed");
@@ -206,6 +236,7 @@ int main() {
 
         std::cout << "Message sent: " << message << std::endl;
     }
+
     close(sock);
     return 0;
 }
