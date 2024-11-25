@@ -1,0 +1,114 @@
+'Focus on learning always ask why and just critically analyse, learn different alternatives (pros,cons)'
+
+
+
+Stage 1: Core Functionality and Basic Architecture 'by 28 Novem'
+'Goals:
+Set up a foundational system for real-time text editing with multiple users.
+Establish WebSocket-based communication for real-time updates.
+Implement a basic client-server model for collaborative editing.
+Tasks:
+Frontend:
+
+Create a simple UI with a text editor (e.g., using CodeMirror or Monaco Editor).
+Enable real-time updates for every keypress.
+Display the list of active collaborators in a session.
+Backend:
+
+Build a WebSocket server to handle real-time data streams (e.g., using Node.js with ws, Django Channels, or Socket.IO).
+Manage user connections and maintain a session for each collaborative document.
+Broadcast changes received from one client to all other connected clients.
+Data Flow:
+
+Decide on a basic data model:
+Document ID
+User ID
+Operations (e.g., insert, delete, update text)
+No persistence yet—just handle changes in memory.
+Outcome:
+A simple collaborative text editor where users can join a session, edit a shared document in real time, and see each others changes.'
+
+Stage 2: Adding Persistence and Scalability  'by 2 December'
+'Goals:
+Ensure document changes are persisted for future sessions.
+Handle scalability for multiple users and documents.
+Implement version control or history tracking for undo/redo functionality.
+Tasks:
+Backend Enhancements:
+
+Use a database (e.g., PostgreSQL, MongoDB, or Redis) to store:
+Document contents.
+User metadata.
+Edit history or operation logs.
+Introduce a messaging queue (e.g., RabbitMQ or Kafka) to handle high concurrency:
+Queue incoming changes.
+Broadcast changes in a fault-tolerant manner.
+Frontend Enhancements:
+
+Add undo/redo functionality:
+Use operation logs from the backend to reconstruct document states.
+Indicate edit conflicts or prevent overwrites when two users make simultaneous changes.
+Scalability:
+
+Design for horizontal scaling:
+Add load balancers for WebSocket connections.
+Use a distributed message broker to manage updates across servers.
+Outcome:
+A scalable, persistent collaborative editor that can handle undo/redo and multiple documents across sessions.'
+
+Stage 3: Conflict Resolution and Advanced Collaboration Features 'by 6 december'
+'Goals:
+Resolve conflicting edits effectively.
+Improve user experience with advanced collaboration features.
+Tasks:
+Conflict Resolution:
+
+Implement algorithms like:
+Operational Transform (OT): Converts edits into a sequence of operations.
+Conflict-Free Replicated Data Types (CRDTs): Ensures consistency without central coordination.
+Ensure users always see the same document state in real-time.
+Advanced Collaboration Features:
+
+Real-time cursors: Display where collaborators are editing.
+Highlight text edited by each user in real-time.
+Add comments or suggestions on specific lines or blocks of code.
+Implement role-based access control (RBAC):
+E.g., editors, viewers, and commenters.
+Frontend Enhancements:
+
+Add user avatars or initials for collaborative indicators.
+Show live collaboration metrics (e.g., active users, typing speed).
+Outcome:
+A robust and feature-rich editor that supports real-time conflict resolution and advanced collaboration.'
+
+
+Stage 4: Production-Grade Features and Optimization
+'Goals:
+Prepare the application for production use.
+Optimize for performance and handle large-scale traffic.
+Tasks:
+Security and Authentication:
+
+Add OAuth or single sign-on (SSO) for user authentication.
+Use HTTPS for secure WebSocket connections (wss://).
+Implement rate limiting and DDoS protection.
+Performance Optimization:
+
+Reduce bandwidth usage:
+Send deltas (minimal updates) instead of full document states.
+Optimize WebSocket handling with connection pooling and heartbeat mechanisms.
+Cache frequently accessed data using Redis or similar tools.
+Monitoring and Analytics:
+
+Integrate logging and monitoring tools (e.g., Prometheus, Grafana, or ELK Stack).
+Track metrics such as:
+Active sessions.
+Average latency.
+Conflict rates.
+Frontend Enhancements:
+
+Add offline mode:
+Synchronize changes when the user reconnects.
+Improve the UI/UX for large documents or complex collaboration scenarios.
+Outcome:
+A highly scalable, production-ready collaborative code editor with excellent performance and user experience.'
