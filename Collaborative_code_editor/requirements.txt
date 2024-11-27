@@ -82,7 +82,7 @@ Outcome:
 A robust and feature-rich editor that supports real-time conflict resolution and advanced collaboration.'
 
 
-Stage 4: Production-Grade Features and Optimization
+Stage 4: Production-Grade Features and Optimization 'before start of winter vacation'
 'Goals:
 Prepare the application for production use.
 Optimize for performance and handle large-scale traffic.
@@ -112,3 +112,6 @@ Synchronize changes when the user reconnects.
 Improve the UI/UX for large documents or complex collaboration scenarios.
 Outcome:
 A highly scalable, production-ready collaborative code editor with excellent performance and user experience.'
+
+
+STAGE 5: build websockets from scratch

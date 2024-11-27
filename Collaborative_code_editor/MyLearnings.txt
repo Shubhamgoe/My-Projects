@@ -1,0 +1,48 @@
+Always ask WHY????  thats gonna be the best way to learn, think why something is needed, if any alternative is better (think through diferent angles)
+
+
+
+
+
+STAGE 1 : 
+
+QUESTIONS
+
+Q. How should the frontend and backend look like
+Req: a normal document hosted on some server whenever I make any changes to that document they should get stored on some centralised server
+
+Q. How does the frontend know when to send the changes to the server?
+Q. How frequently the frontend should send the changes to the server?
+Ans: ----> Either in batch (after every some seconds) can be done Normal HTTP (non peristent)(introduces overheads with sending headers again and again)
+     ----> Or Immediately (Whenever there is a change in the doc) should be done via persistent (cant afford again and again transfer of headers and the 3-way TCP handshake)
+
+| Feature/Criteria               | WebSockets                          | HTTP/2 Streams                      | Server-Sent Events (SSE)            | Long Polling                        | gRPC (HTTP/2)                       | Raw TCP/UDP Sockets                | MQTT                               |
+|---------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|-------------------------------------|
+| **Bidirectional Communication** | ✅ Yes                              | ✅ Yes                              | ❌ Server-to-Client Only            | ❌ Client-to-Server Only            | ✅ Yes                              | ✅ Yes                              | ✅ Yes                              |
+| **Latency**                     | ⭐⭐⭐ Low                            | ⭐⭐⭐ Low                            | ⭐⭐ Moderate                        | ⭐ Moderate                         | ⭐⭐⭐ Low                            | ⭐⭐⭐ Very Low                       | ⭐⭐⭐ Very Low                       |
+| **Ease of Implementation**      | ⭐⭐ Moderate                       | ⭐⭐ Moderate                       | ⭐⭐⭐ Easy                            | ⭐⭐ Moderate                         | ⭐ Moderate                         | ⭐ Difficult                        | ⭐⭐ Moderate                       |
+| **Scalability**                 | ⭐⭐⭐ Excellent                      | ⭐⭐⭐ Excellent                      | ⭐⭐ Good                             | ⭐⭐ Good                             | ⭐⭐⭐ Excellent                      | ⭐⭐⭐ Excellent                      | ⭐⭐⭐ Excellent                      |
+| **Browser Support**             | ⭐⭐⭐ Native                        | ⭐⭐ Limited                         | ⭐⭐⭐ Native                          | ⭐⭐⭐ Native                          | ⭐⭐ Limited                         | ❌ Not Supported                   | ❌ Not Native (requires libraries) |
+| **Connection Persistence**      | ✅ Fully Persistent                | ✅ Fully Persistent                | ✅ Fully Persistent                  | ❌ Not Persistent                   | ✅ Fully Persistent                | ✅ Fully Persistent                | ✅ Fully Persistent                |
+| **Protocol Overhead**           | ⭐⭐ Moderate                       | ⭐ Moderate                        | ⭐⭐ Moderate                        | ⭐⭐⭐ High                           | ⭐ Moderate                         | ⭐ Minimal                          | ⭐ Minimal                          |
+| **Real-Time Suitability**       | ⭐⭐⭐ Excellent                      | ⭐⭐⭐ Excellent                      | ⭐⭐ Good                             | ⭐ Moderate                         | ⭐⭐⭐ Excellent                      | ⭐⭐⭐ Excellent                      | ⭐⭐⭐ Excellent                      |
+| **Fallback Support**            | ⭐⭐⭐ Widely Supported              | ⭐⭐ Limited                         | ⭐⭐⭐ Easy Fallback (HTTP)            | ⭐⭐⭐ Native Fallback               | ⭐⭐ Limited                         | ❌ None                             | ⭐⭐ Limited                        |
+| **Security**                    | ✅ TLS/WSS                         | ✅ TLS                             | ✅ TLS                               | ✅ TLS                             | ✅ TLS                             | ❌ Requires Manual Setup          | ✅ TLS                             |
+| **Concurrency Handling**        | ⭐⭐⭐ Excellent                      | ⭐⭐⭐ Excellent                      | ⭐⭐ Moderate                         | ⭐ Moderate                         | ⭐⭐⭐ Excellent                      | ⭐⭐⭐ Excellent                      | ⭐⭐⭐ Excellent                      |
+| **Ideal Use Cases**             | Real-time updates for collaborative apps like document editors, chat apps, or multiplayer games | Complex systems with many parallel requests or streams | Real-time notifications, news updates | Simple or legacy applications     | High-performance, distributed systems with real-time streaming | Custom low-level protocols for high control | IoT, real-time messaging, lightweight communication |
+
+Conclusion :  WebSockets are "native" in the sense that modern browsers (like Chrome, Firefox, Safari, and Edge) have built-in support for the WebSocket protocol.
+              This means developers don't have to manually handle the protocol handshake or manage lower-level networking tasks.
+
+
+Q. When should the backend be notified?
+Q. How will the backend store the documents?
+Q. How will frontend send the new document to the server?
+Q. How will the communication happen?
+Ans: Communication must be immediate , no delays (no again and again HTTP requests(non-persistent) so instead use persistent connection)
+    After the handshake, the connection switches to a binary frame-based communication using the WebSocket protocol
+    Websockets messages can be in text(UTF 8 encoded or binary format such as blobs,images etc)
+Q When should this connection Open?
+
+
+
