@@ -45,7 +45,8 @@ html = """
                             document.getElementById("notebookIdDisplay").innerText = `Your new notebook ID is: ${data.notebook_id}`;
                         }
 
-                        const ws = new WebSocket(data.url);
+                        // Update the WebSocket URL to use the deployed domain
+                        const ws = new WebSocket(`ws://${window.location.host}/ws/${data.notebook_id}`);
                         const codeArea = document.getElementById("code");
 
                         ws.onopen = () => {
@@ -66,6 +67,7 @@ html = """
                     });
             }
         </script>
+
     </body>
 </html>
 
@@ -81,13 +83,15 @@ def create_notebook():
     notebook_id = str(uuid.uuid4())
     notebooks[notebook_id] = ""  # Initialize notebook content
     clients[notebook_id] = []  # Initialize client list
-    return {"notebook_id": notebook_id, "url": f"ws://localhost:8000/ws/{notebook_id}"}
+    # Instead of hardcoding localhost, we use the actual domain or IP dynamically
+    return {"notebook_id": notebook_id, "url": f"ws://{window.location.host}/ws/{notebook_id}"}
 
 @app.get("/join/{notebook_id}")
 def join_notebook(notebook_id: str):
     if notebook_id not in notebooks:
         return {"error": "Notebook not found"}
-    return {"notebook_id": notebook_id, "url": f"ws://localhost:8000/ws/{notebook_id}"}
+    # Same here: return the dynamic WebSocket URL
+    return {"notebook_id": notebook_id, "url": f"ws://{window.location.host}/ws/{notebook_id}"}
 
 @app.websocket("/ws/{notebook_id}")
 async def websocket_endpoint(websocket: WebSocket, notebook_id: str):
