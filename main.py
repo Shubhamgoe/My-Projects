@@ -47,6 +47,7 @@ html = """
                         }
 
                         // Update the WebSocket URL to use the deployed domain
+                        alert(window.location.host)
                         const ws = new WebSocket(`ws://${window.location.host}/ws/${data.notebook_id}`);
                         const codeArea = document.getElementById("code");
 
