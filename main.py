@@ -1,5 +1,6 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
+from fastapi import Request
 import uuid
 
 app = FastAPI()
@@ -79,19 +80,21 @@ async def get():
     return HTMLResponse(html)
 
 @app.get("/new")
-def create_notebook():
+def create_notebook(request: Request):
     notebook_id = str(uuid.uuid4())
     notebooks[notebook_id] = ""  # Initialize notebook content
     clients[notebook_id] = []  # Initialize client list
-    # Instead of hardcoding localhost, we use the actual domain or IP dynamically
-    return {"notebook_id": notebook_id, "url": f"ws://{window.location.host}/ws/{notebook_id}"}
+    # Use request.url.hostname to dynamically get the host
+    host = request.url.hostname
+    return {"notebook_id": notebook_id, "url": f"ws://{host}/ws/{notebook_id}"}
 
 @app.get("/join/{notebook_id}")
-def join_notebook(notebook_id: str):
+def join_notebook(notebook_id: str, request: Request):
     if notebook_id not in notebooks:
         return {"error": "Notebook not found"}
-    # Same here: return the dynamic WebSocket URL
-    return {"notebook_id": notebook_id, "url": f"ws://{window.location.host}/ws/{notebook_id}"}
+    # Use request.url.hostname to dynamically get the host
+    host = request.url.hostname
+    return {"notebook_id": notebook_id, "url": f"ws://{host}/ws/{notebook_id}"}
 
 @app.websocket("/ws/{notebook_id}")
 async def websocket_endpoint(websocket: WebSocket, notebook_id: str):
